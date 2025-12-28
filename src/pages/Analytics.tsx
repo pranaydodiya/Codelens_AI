@@ -17,6 +17,7 @@ import {
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { StatCard } from '@/components/ui/stat-card';
+import { BackButton } from '@/components/ui/back-button';
 import { CHART_DATA, STATS } from '@/lib/constants';
 import { TrendingUp, Target, Clock, Zap } from 'lucide-react';
 

@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
+import { AnimatedBackground } from '@/components/ui/animated-background';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -9,14 +10,16 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <AnimatedBackground />
+      
       {/* Sidebar - Hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="md:pl-[72px] lg:pl-64 transition-all duration-200">
+      <div className="md:pl-[72px] lg:pl-64 transition-all duration-200 relative z-10">
         <Navbar />
         <motion.main
           initial={{ opacity: 0, y: 20 }}

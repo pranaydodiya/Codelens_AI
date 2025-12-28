@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScoreBadge, StatusBadge } from '@/components/ui/ai-badge';
+import { BackButton } from '@/components/ui/back-button';
 import { REVIEW_HISTORY } from '@/lib/constants';
 import {
   Dialog,
@@ -23,7 +24,7 @@ export default function History() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
+        <BackButton to="/dashboard" />
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

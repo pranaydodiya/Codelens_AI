@@ -15,6 +15,9 @@ import History from "./pages/History";
 import Analytics from "./pages/Analytics";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
+import AICodeSummary from "./pages/AICodeSummary";
+import AICodeGenerator from "./pages/AICodeGenerator";
+import APIPlayground from "./pages/APIPlayground";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +41,9 @@ const App = () => (
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/ai-summary" element={<AICodeSummary />} />
+            <Route path="/ai-generator" element={<AICodeGenerator />} />
+            <Route path="/api-playground" element={<APIPlayground />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

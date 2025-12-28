@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Sparkles,
   CreditCard,
+  Wand2,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,12 @@ const navItems = [
   { name: 'Code Review', path: '/reviews', icon: Code },
   { name: 'History', path: '/history', icon: History },
   { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+];
+
+const aiNavItems = [
+  { name: 'AI Summary', path: '/ai-summary', icon: Sparkles },
+  { name: 'Code Generator', path: '/ai-generator', icon: Wand2 },
+  { name: 'API Playground', path: '/api-playground', icon: Globe },
 ];
 
 const bottomNavItems = [
@@ -75,7 +83,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -95,6 +103,58 @@ export function Sidebar() {
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-primary"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <Icon className="h-5 w-5 shrink-0" />
+                <AnimatePresence mode="wait">
+                  {!isCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15 }}
+                      className="text-sm font-medium overflow-hidden whitespace-nowrap"
+                    >
+                      {item.name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </Link>
+          );
+        })}
+        
+        {/* AI Features Section */}
+        {!isCollapsed && (
+          <div className="pt-4 pb-2">
+            <span className="px-3 text-[10px] uppercase tracking-wider text-sidebar-foreground/50 font-semibold">
+              AI Features
+            </span>
+          </div>
+        )}
+        {isCollapsed && <div className="h-4" />}
+        
+        {aiNavItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+
+          return (
+            <Link key={item.path} to={item.path}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors relative',
+                  isActive
+                    ? 'bg-sidebar-accent text-sidebar-primary'
+                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavAI"
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-primary"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
