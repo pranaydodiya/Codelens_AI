@@ -1,7 +1,7 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Moon, Sun, Monitor, Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -14,40 +14,59 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { MobileSidebar } from './MobileSidebar';
+import { CommandSearch } from '@/components/CommandSearch';
 
 export function Navbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((open) => !open);
+      }
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
 
   return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl"
-    >
-      <div className="flex h-full items-center justify-between px-4 md:px-6">
-        {/* Mobile Menu */}
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72">
-            <MobileSidebar />
-          </SheetContent>
-        </Sheet>
+    <>
+      <CommandSearch open={searchOpen} onOpenChange={setSearchOpen} />
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl"
+      >
+        <div className="flex h-full items-center justify-between px-4 md:px-6">
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-72">
+              <MobileSidebar />
+            </SheetContent>
+          </Sheet>
 
-        {/* Search */}
-        <div className="hidden md:flex flex-1 max-w-md">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search repositories, reviews..."
-              className="pl-9 bg-secondary border-0"
-            />
+          {/* Search */}
+          <div className="hidden md:flex flex-1 max-w-md">
+            <Button
+              variant="outline"
+              className="w-full justify-start text-muted-foreground bg-secondary border-0 hover:bg-secondary/80"
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search className="mr-2 h-4 w-4" />
+              <span className="flex-1 text-left">Search...</span>
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </Button>
           </div>
-        </div>
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
@@ -120,5 +139,6 @@ export function Navbar() {
         </div>
       </div>
     </motion.header>
+    </>
   );
 }

@@ -131,15 +131,20 @@ export default function Index() {
 
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
-            <span>CodeLens © 2024</span>
+        <div className="container mx-auto flex flex-col items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span>CodeLens © 2024</span>
+            </div>
+            <div className="flex gap-6">
+              <Link to="#" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link to="#" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link to="#" className="hover:text-foreground transition-colors">Contact</Link>
+            </div>
           </div>
-          <div className="flex gap-6">
-            <Link to="#" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link to="#" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link to="#" className="hover:text-foreground transition-colors">Contact</Link>
+          <div className="text-center text-xs text-muted-foreground/70">
+            Made with ❤️ by <span className="font-medium text-primary">Pranay Dodiya</span>
           </div>
         </div>
       </footer>
