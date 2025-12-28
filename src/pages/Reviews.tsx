@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AIBadge, ScoreBadge } from '@/components/ui/ai-badge';
+import { BackButton } from '@/components/ui/back-button';
 import { AI_REVIEW, CODE_FILES, SAMPLE_CODE } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -88,7 +89,8 @@ export default function Reviews() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
+        <BackButton to="/dashboard" />
+        
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

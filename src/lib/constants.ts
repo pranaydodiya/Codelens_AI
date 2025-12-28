@@ -393,6 +393,7 @@ export const PRICING_PLANS = [
   {
     name: 'Starter',
     price: 0,
+    currency: '₹',
     description: 'Perfect for individual developers',
     features: [
       '3 repositories',
@@ -405,7 +406,8 @@ export const PRICING_PLANS = [
   },
   {
     name: 'Pro',
-    price: 29,
+    price: 1999,
+    currency: '₹',
     description: 'For growing teams',
     features: [
       'Unlimited repositories',
@@ -420,7 +422,8 @@ export const PRICING_PLANS = [
   },
   {
     name: 'Enterprise',
-    price: 99,
+    price: 7999,
+    currency: '₹',
     description: 'For large organizations',
     features: [
       'Everything in Pro',
@@ -442,5 +445,8 @@ export const NAV_ITEMS = [
   { name: 'Reviews', path: '/reviews', icon: 'Code' },
   { name: 'History', path: '/history', icon: 'History' },
   { name: 'Analytics', path: '/analytics', icon: 'BarChart3' },
+  { name: 'AI Summary', path: '/ai-summary', icon: 'Sparkles' },
+  { name: 'Code Generator', path: '/ai-generator', icon: 'Wand2' },
+  { name: 'API Playground', path: '/api-playground', icon: 'Globe' },
   { name: 'Settings', path: '/settings', icon: 'Settings' },
 ];

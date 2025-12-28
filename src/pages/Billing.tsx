@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { BackButton } from '@/components/ui/back-button';
 import { PRICING_PLANS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -11,7 +12,7 @@ export default function Billing() {
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {/* Header */}
+        <BackButton to="/dashboard" />
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -39,7 +40,7 @@ export default function Billing() {
                   <CardDescription>Your current subscription</CardDescription>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-foreground">$29</div>
+                  <div className="text-3xl font-bold text-foreground">₹1,999</div>
                   <div className="text-sm text-muted-foreground">/month</div>
                 </div>
               </div>
@@ -117,7 +118,7 @@ export default function Billing() {
                     <CardDescription>{plan.description}</CardDescription>
                     <div className="pt-4">
                       <span className="text-4xl font-bold text-foreground">
-                        ${plan.price}
+                        {plan.price === 0 ? 'Free' : `₹${plan.price.toLocaleString('en-IN')}`}
                       </span>
                       {plan.price > 0 && (
                         <span className="text-muted-foreground">/month</span>
