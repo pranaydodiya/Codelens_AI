@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Star, GitBranch, Clock, ExternalLink, Filter } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -28,6 +29,7 @@ const languageColors: Record<string, string> = {
 export default function Repositories() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const navigate = useNavigate();
 
   const filteredRepos = REPOSITORIES.filter(
     (repo) =>
@@ -132,6 +134,7 @@ export default function Repositories() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.2 }}
+                onClick={() => navigate(`/repositories/${repo.id}`)}
               >
                 <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
                   <CardContent className="p-5 space-y-4">

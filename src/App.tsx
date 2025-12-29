@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Repositories from "./pages/Repositories";
 import Reviews from "./pages/Reviews";
 import History from "./pages/History";
+import RepositoryDetail from "./pages/RepositoryDetail";
 import Analytics from "./pages/Analytics";
 import Billing from "./pages/Billing";
 import Settings from "./pages/Settings";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/repositories" element={<Repositories />} />
+            <Route path="/repositories/:id" element={<RepositoryDetail />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/history" element={<History />} />
             <Route path="/analytics" element={<Analytics />} />
