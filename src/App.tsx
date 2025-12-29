@@ -11,6 +11,9 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Repositories from "./pages/Repositories";
 import Reviews from "./pages/Reviews";
+import PRDetail from "./pages/PRDetail";
+import Profile from "./pages/Profile";
+import Team from "./pages/Team";
 import History from "./pages/History";
 import RepositoryDetail from "./pages/RepositoryDetail";
 import Analytics from "./pages/Analytics";
@@ -39,6 +42,9 @@ const App = () => (
             <Route path="/repositories" element={<Repositories />} />
             <Route path="/repositories/:id" element={<RepositoryDetail />} />
             <Route path="/reviews" element={<Reviews />} />
+            <Route path="/reviews/:id" element={<PRDetail />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/team" element={<Team />} />
             <Route path="/history" element={<History />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/billing" element={<Billing />} />
