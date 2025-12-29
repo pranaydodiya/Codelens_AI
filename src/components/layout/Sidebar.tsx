@@ -14,6 +14,8 @@ import {
   CreditCard,
   Wand2,
   Globe,
+  Users,
+  User,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,6 +26,7 @@ const navItems = [
   { name: 'Code Review', path: '/reviews', icon: Code },
   { name: 'History', path: '/history', icon: History },
   { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+  { name: 'Team', path: '/team', icon: Users },
 ];
 
 const aiNavItems = [
@@ -33,6 +36,7 @@ const aiNavItems = [
 ];
 
 const bottomNavItems = [
+  { name: 'Profile', path: '/profile', icon: User },
   { name: 'Billing', path: '/billing', icon: CreditCard },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
