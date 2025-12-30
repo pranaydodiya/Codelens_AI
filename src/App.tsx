@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -22,6 +23,9 @@ import Settings from "./pages/Settings";
 import AICodeSummary from "./pages/AICodeSummary";
 import AICodeGenerator from "./pages/AICodeGenerator";
 import APIPlayground from "./pages/APIPlayground";
+import Notifications from "./pages/Notifications";
+import Integrations from "./pages/Integrations";
+import Help from "./pages/Help";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +36,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <KeyboardShortcutsModal />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -52,6 +57,9 @@ const App = () => (
             <Route path="/ai-summary" element={<AICodeSummary />} />
             <Route path="/ai-generator" element={<AICodeGenerator />} />
             <Route path="/api-playground" element={<APIPlayground />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/help" element={<Help />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

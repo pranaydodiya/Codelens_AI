@@ -16,6 +16,7 @@ import {
   Globe,
   Users,
   User,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,8 @@ const aiNavItems = [
 const bottomNavItems = [
   { name: 'Profile', path: '/profile', icon: User },
   { name: 'Billing', path: '/billing', icon: CreditCard },
+  { name: 'Integrations', path: '/integrations', icon: Globe },
+  { name: 'Help', path: '/help', icon: HelpCircle },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
