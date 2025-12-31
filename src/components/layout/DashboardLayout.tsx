@@ -10,16 +10,16 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative isolate">
       <AnimatedBackground />
       
       {/* Sidebar - Hidden on mobile */}
-      <div className="hidden md:block">
+      <div className="hidden md:block relative z-20">
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="md:pl-[72px] lg:pl-64 transition-all duration-200 relative z-10">
+      <div className="md:pl-[72px] lg:pl-64 transition-all duration-200 relative z-10 bg-background/80 backdrop-blur-sm">
         <Navbar />
         <motion.main
           initial={{ opacity: 0, y: 20 }}
