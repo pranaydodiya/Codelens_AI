@@ -1,45 +1,30 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Check, Trash2, GitPullRequest, MessageSquare, AlertCircle, Settings, CheckCheck } from 'lucide-react';
+import { Bell, Check, Trash2, GitPullRequest, MessageSquare, AlertCircle, Bot, CheckCheck, Wifi, WifiOff } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-interface Notification {
-  id: string;
-  type: 'review' | 'mention' | 'system';
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-}
-
-const initialNotifications: Notification[] = [
-  { id: '1', type: 'review', title: 'New AI Review Ready', description: 'AI completed review for PR #142 in frontend-app', time: '5 min ago', read: false },
-  { id: '2', type: 'mention', title: 'Sarah mentioned you', description: 'Can you take a look at this implementation?', time: '1 hour ago', read: false },
-  { id: '3', type: 'system', title: 'Weekly Report Available', description: 'Your team\'s code quality report is ready', time: '3 hours ago', read: false },
-  { id: '4', type: 'review', title: 'Review Approved', description: 'Your PR #138 was approved by the team', time: '5 hours ago', read: true },
-  { id: '5', type: 'mention', title: 'Mike replied to your comment', description: 'Good catch! I\'ll fix that issue.', time: '1 day ago', read: true },
-  { id: '6', type: 'system', title: 'New Feature: AI Code Generator', description: 'Try our new AI-powered code generation tool', time: '2 days ago', read: true },
-];
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useState } from 'react';
 
 const typeIcons = {
   review: GitPullRequest,
   mention: MessageSquare,
   system: AlertCircle,
+  ai: Bot,
 };
 
 const typeColors = {
   review: 'text-primary',
   mention: 'text-chart-2',
   system: 'text-chart-4',
+  ai: 'text-chart-3',
 };
 
 export default function Notifications() {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const { notifications, unreadCount, isConnected, markAsRead, markAllAsRead, deleteNotification, clearAll } = useNotifications();
   const [activeTab, setActiveTab] = useState('all');
 
   const filteredNotifications = notifications.filter((n) => {
@@ -47,26 +32,6 @@ export default function Notifications() {
     if (activeTab === 'unread') return !n.read;
     return n.type === activeTab;
   });
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
-
-  const clearAll = () => {
-    setNotifications([]);
-  };
 
   return (
     <DashboardLayout>
@@ -78,7 +43,29 @@ export default function Notifications() {
               <Bell className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className={cn(
+                    'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs',
+                    isConnected ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {isConnected ? (
+                    <>
+                      <Wifi className="h-3 w-3" />
+                      <span>Live</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="h-3 w-3" />
+                      <span>Offline</span>
+                    </>
+                  )}
+                </motion.div>
+              </div>
               <p className="text-sm text-muted-foreground">
                 {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
               </p>
@@ -110,6 +97,7 @@ export default function Notifications() {
             </TabsTrigger>
             <TabsTrigger value="review">Reviews</TabsTrigger>
             <TabsTrigger value="mention">Mentions</TabsTrigger>
+            <TabsTrigger value="ai">AI</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
 
@@ -124,7 +112,7 @@ export default function Notifications() {
                   <Bell className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-1">No notifications</h3>
-                <p className="text-muted-foreground">You're all caught up!</p>
+                <p className="text-muted-foreground">You're all caught up! New notifications will appear here in real-time.</p>
               </motion.div>
             ) : (
               <div className="space-y-3">
@@ -135,24 +123,36 @@ export default function Notifications() {
                       <motion.div
                         key={notification.id}
                         layout
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        transition={{ delay: i * 0.05 }}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -100, scale: 0.95 }}
+                        transition={{ delay: i * 0.03 }}
                       >
                         <Card className={cn(
-                          'transition-colors',
-                          !notification.read && 'bg-primary/5 border-primary/20'
+                          'transition-all duration-300',
+                          !notification.read && 'bg-primary/5 border-primary/20 shadow-sm shadow-primary/5'
                         )}>
                           <CardContent className="flex items-start gap-4 p-4">
-                            <div className={cn('h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0', typeColors[notification.type])}>
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ type: 'spring', stiffness: 300 }}
+                              className={cn('h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0', typeColors[notification.type])}
+                            >
                               <Icon className="h-5 w-5" />
-                            </div>
+                            </motion.div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
                                 <div>
                                   <h4 className={cn('font-medium text-foreground', !notification.read && 'font-semibold')}>
                                     {notification.title}
+                                    {!notification.read && (
+                                      <motion.span
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="inline-block ml-2 h-2 w-2 rounded-full bg-primary"
+                                      />
+                                    )}
                                   </h4>
                                   <p className="text-sm text-muted-foreground mt-0.5">{notification.description}</p>
                                 </div>
