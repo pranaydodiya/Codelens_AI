@@ -3,12 +3,15 @@ import { motion } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { AnimatedBackground } from '@/components/ui/animated-background';
+import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+function DashboardContent({ children }: { children: ReactNode }) {
+  const { isCollapsed } = useSidebarContext();
+
   return (
     <div className="min-h-screen bg-background relative isolate">
       <AnimatedBackground />
@@ -18,8 +21,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sidebar />
       </div>
 
-      {/* Main Content */}
-      <div className="md:pl-[72px] lg:pl-64 transition-all duration-200 relative z-10 bg-background/80 backdrop-blur-sm">
+      {/* Main Content - Responsive to sidebar state */}
+      <div 
+        className="transition-all duration-200 relative z-10 bg-background/80 backdrop-blur-sm"
+        style={{ paddingLeft: isCollapsed ? '72px' : '256px' }}
+      >
         <Navbar />
         <motion.main
           initial={{ opacity: 0, y: 20 }}
@@ -31,5 +37,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </motion.main>
       </div>
     </div>
+  );
+}
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <SidebarProvider>
+      <DashboardContent>{children}</DashboardContent>
+    </SidebarProvider>
   );
 }
