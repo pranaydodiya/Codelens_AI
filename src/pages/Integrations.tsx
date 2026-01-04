@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Puzzle, Check, ExternalLink, Settings, Webhook, Plus } from 'lucide-react';
+import { Puzzle, Check, ExternalLink, Settings, Webhook, Plus, Brain } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -8,8 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
+import { GitHubConnect } from '@/components/integrations/GitHubConnect';
+import { AIReviewService } from '@/components/ai/AIReviewService';
 
 interface Integration {
   id: string;
@@ -39,10 +42,16 @@ const webhooks = [
 export default function Integrations() {
   const [configModal, setConfigModal] = useState<Integration | null>(null);
   const [webhookModal, setWebhookModal] = useState(false);
+  const [githubModal, setGithubModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('integrations');
 
   const handleConnect = (integration: Integration) => {
     if (integration.status === 'coming_soon') {
       toast({ title: 'Coming Soon', description: `${integration.name} integration will be available soon!` });
+      return;
+    }
+    if (integration.id === 'github') {
+      setGithubModal(true);
       return;
     }
     setConfigModal(integration);
@@ -57,17 +66,33 @@ export default function Integrations() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Puzzle className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Integrations</h1>
-            <p className="text-sm text-muted-foreground">Connect your favorite tools to CodeLens</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Puzzle className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Integrations & AI</h1>
+              <p className="text-sm text-muted-foreground">Connect tools and access AI services</p>
+            </div>
           </div>
         </div>
 
-        {/* Integration Grid */}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList>
+            <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <Puzzle className="h-4 w-4" />
+              Integrations
+            </TabsTrigger>
+            <TabsTrigger value="ai-review" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              AI Code Review
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="integrations" className="space-y-6">
+            {/* Integration Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {integrations.map((integration, i) => (
             <motion.div
@@ -124,41 +149,50 @@ export default function Integrations() {
           ))}
         </div>
 
-        {/* Webhooks Section */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Webhook className="h-5 w-5 text-primary" />
-                Webhooks
-              </CardTitle>
-              <CardDescription>Receive real-time notifications via custom webhooks</CardDescription>
-            </div>
-            <Button size="sm" onClick={() => setWebhookModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Webhook
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {webhooks.map((webhook) => (
-                <div key={webhook.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary">
-                  <div>
-                    <p className="font-medium text-foreground">{webhook.name}</p>
-                    <p className="text-sm text-muted-foreground font-mono">{webhook.url}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-chart-2 border-chart-2">Active</Badge>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Settings className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {/* Webhooks Section */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Webhook className="h-5 w-5 text-primary" />
+                    Webhooks
+                  </CardTitle>
+                  <CardDescription>Receive real-time notifications via custom webhooks</CardDescription>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <Button size="sm" onClick={() => setWebhookModal(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Webhook
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {webhooks.map((webhook) => (
+                    <div key={webhook.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary">
+                      <div>
+                        <p className="font-medium text-foreground">{webhook.name}</p>
+                        <p className="text-sm text-muted-foreground font-mono">{webhook.url}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-chart-2 border-chart-2">Active</Badge>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="ai-review">
+            <AIReviewService />
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* GitHub Connect Modal */}
+      <GitHubConnect isOpen={githubModal} onClose={() => setGithubModal(false)} />
 
       {/* Config Modal */}
       <Dialog open={!!configModal} onOpenChange={() => setConfigModal(null)}>

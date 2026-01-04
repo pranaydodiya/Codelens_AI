@@ -16,10 +16,10 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const notificationState = useRealtimeNotifications({
-    enabled: true,
+    enabled: false,
     intervalMin: 20000,
     intervalMax: 60000,
-    showToasts: true,
+    showToasts: false,
   });
 
   return (
