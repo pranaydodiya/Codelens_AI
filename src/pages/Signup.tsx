@@ -1,60 +1,105 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Eye, EyeOff, Github, ArrowRight, Check } from 'lucide-react';
+import { Sparkles, Eye, EyeOff, Github, ArrowRight, Check, Loader2, Users, TrendingUp, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const navigate = useNavigate();
+  const { signup, loginWithGitHub, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
+    if (!agreed) return;
+    
+    const success = await signup(email, password, `${firstName} ${lastName}`);
+    if (success) {
       navigate('/onboarding');
-    }, 1000);
+    }
   };
+
+  const handleGitHubSignup = async () => {
+    const success = await loginWithGitHub();
+    if (success) {
+      navigate('/onboarding');
+    }
+  };
+
+  const stats = [
+    { icon: Users, value: '50K+', label: 'Developers' },
+    { icon: TrendingUp, value: '10M+', label: 'Reviews' },
+    { icon: Shield, value: '99.9%', label: 'Uptime' },
+  ];
 
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Feature Showcase */}
-      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-accent/10 via-primary/10 to-background p-12 border-r border-border">
+      <div className="hidden lg:flex flex-1 items-center justify-center bg-gradient-to-br from-primary/10 via-accent/10 to-background p-12 border-r border-border">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5 }}
           className="max-w-lg space-y-8"
         >
           <div className="space-y-4">
             <h2 className="text-3xl font-bold text-foreground">
-              Start Reviewing Smarter
+              Join thousands of developers
             </h2>
             <p className="text-lg text-muted-foreground">
-              Join thousands of developers using AI to improve their code quality.
+              Get started with AI-powered code reviews and improve your code quality instantly.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: 'Active Users', value: '10K+' },
-              { label: 'Reviews/Day', value: '50K+' },
-              { label: 'Issues Found', value: '1M+' },
-              { label: 'Time Saved', value: '500K hrs' },
-            ].map((stat, i) => (
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-6">
+            {stats.map((stat, i) => (
               <motion.div
                 key={stat.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className="p-4 rounded-lg bg-card/50 backdrop-blur border border-border"
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="text-center"
               >
+                <div className="flex justify-center mb-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                    <stat.icon className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
                 <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Features */}
+          <div className="space-y-4">
+            {[
+              'Free tier with 100 reviews/month',
+              'No credit card required',
+              'Connect unlimited public repositories',
+              'Real-time code analysis',
+            ].map((feature, i) => (
+              <motion.div
+                key={feature}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-chart-2/20">
+                  <Check className="h-3.5 w-3.5 text-chart-2" />
+                </div>
+                <span className="text-muted-foreground">{feature}</span>
               </motion.div>
             ))}
           </div>
@@ -80,7 +125,7 @@ export default function Signup() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Create an account</h1>
             <p className="text-muted-foreground mt-2">
-              Start your free trial today. No credit card required.
+              Start reviewing code with AI in minutes
             </p>
           </div>
 
@@ -89,11 +134,25 @@ export default function Signup() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name</Label>
-                  <Input id="firstName" placeholder="John" required />
+                  <Input
+                    id="firstName"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last name</Label>
-                  <Input id="lastName" placeholder="Doe" required />
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -102,7 +161,10 @@ export default function Signup() {
                   id="email"
                   type="email"
                   placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -112,7 +174,11 @@ export default function Signup() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
+                    minLength={6}
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
@@ -127,12 +193,19 @@ export default function Signup() {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters with a number and symbol
+                  Must be at least 6 characters
                 </p>
               </div>
               <div className="flex items-start space-x-2">
-                <Checkbox id="terms" required />
-                <label htmlFor="terms" className="text-sm text-muted-foreground">
+                <Checkbox 
+                  id="terms" 
+                  checked={agreed}
+                  onCheckedChange={(checked) => setAgreed(checked as boolean)}
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-muted-foreground leading-tight"
+                >
                   I agree to the{' '}
                   <Link to="#" className="text-primary hover:underline">
                     Terms of Service
@@ -145,13 +218,9 @@ export default function Signup() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !agreed}>
               {isLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                  className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full"
-                />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   Create account
@@ -171,8 +240,18 @@ export default function Signup() {
               </div>
             </div>
 
-            <Button variant="outline" type="button" className="w-full gap-2">
-              <Github className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              type="button" 
+              className="w-full gap-2"
+              onClick={handleGitHubSignup}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Github className="h-4 w-4" />
+              )}
               Sign up with GitHub
             </Button>
           </form>
