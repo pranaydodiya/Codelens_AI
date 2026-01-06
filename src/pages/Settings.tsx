@@ -4,12 +4,15 @@ import {
   User,
   Bell,
   Palette,
-  Shield,
   GitBranch,
   Sparkles,
   Moon,
   Sun,
   Monitor,
+  Github,
+  Check,
+  RefreshCw,
+  Trash2,
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,17 +22,46 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useGitHub } from '@/contexts/GitHubContext';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const { isConnected: githubConnected, account: githubAccount, connect: connectGitHub, disconnect: disconnectGitHub, isLoading: githubLoading } = useGitHub();
+  
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
     reviews: true,
     marketing: false,
   });
+
+  const [profile, setProfile] = useState({
+    firstName: user?.name?.split(' ')[0] || 'John',
+    lastName: user?.name?.split(' ')[1] || 'Doe',
+    email: user?.email || 'john@acme.com',
+    company: 'Acme Corporation',
+  });
+
+  const handleSaveProfile = () => {
+    toast({
+      title: 'Profile Updated',
+      description: 'Your profile has been saved successfully.',
+    });
+  };
+
+  const handleClearData = () => {
+    localStorage.clear();
+    toast({
+      title: 'Data Cleared',
+      description: 'All local data has been cleared. Please refresh the page.',
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -88,7 +120,7 @@ export default function Settings() {
                   <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
                       <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                        JD
+                        {user?.avatar || 'JD'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-2">
@@ -103,24 +135,47 @@ export default function Settings() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="John" />
+                      <Input 
+                        id="firstName" 
+                        value={profile.firstName}
+                        onChange={(e) => setProfile(p => ({ ...p, firstName: e.target.value }))}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Doe" />
+                      <Input 
+                        id="lastName" 
+                        value={profile.lastName}
+                        onChange={(e) => setProfile(p => ({ ...p, lastName: e.target.value }))}
+                      />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue="john@acme.com" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={profile.email}
+                        onChange={(e) => setProfile(p => ({ ...p, email: e.target.value }))}
+                      />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="company">Company</Label>
-                      <Input id="company" defaultValue="Acme Corporation" />
+                      <Input 
+                        id="company" 
+                        value={profile.company}
+                        onChange={(e) => setProfile(p => ({ ...p, company: e.target.value }))}
+                      />
                     </div>
                   </div>
-                  <div className="flex justify-end gap-3">
-                    <Button variant="outline">Cancel</Button>
-                    <Button>Save Changes</Button>
+                  <div className="flex justify-between gap-3">
+                    <Button variant="destructive" onClick={handleClearData} className="gap-2">
+                      <Trash2 className="h-4 w-4" />
+                      Clear All Data
+                    </Button>
+                    <div className="flex gap-3">
+                      <Button variant="outline">Cancel</Button>
+                      <Button onClick={handleSaveProfile}>Save Changes</Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -232,8 +287,44 @@ export default function Settings() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* GitHub - Special handling with real context */}
+                  <motion.div
+                    whileHover={{ x: 2 }}
+                    className="flex items-center justify-between p-4 rounded-lg border border-border"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                        <Github className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          GitHub
+                          {githubConnected && (
+                            <Badge variant="outline" className="text-chart-2 border-chart-2">
+                              <Check className="h-3 w-3 mr-1" />
+                              Connected
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {githubConnected ? `@${githubAccount?.username}` : 'Not connected'}
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      variant={githubConnected ? 'outline' : 'default'} 
+                      size="sm"
+                      onClick={githubConnected ? disconnectGitHub : connectGitHub}
+                      disabled={githubLoading}
+                    >
+                      {githubLoading ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : githubConnected ? 'Disconnect' : 'Connect'}
+                    </Button>
+                  </motion.div>
+
+                  {/* Other integrations */}
                   {[
-                    { name: 'GitHub', connected: true, icon: '🐙' },
                     { name: 'GitLab', connected: false, icon: '🦊' },
                     { name: 'Bitbucket', connected: false, icon: '🪣' },
                     { name: 'Slack', connected: true, icon: '💬' },

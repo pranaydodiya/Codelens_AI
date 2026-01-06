@@ -1,24 +1,37 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Eye, EyeOff, Github, ArrowRight, Check } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Sparkles, Eye, EyeOff, Github, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, loginWithGitHub, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 1000);
+    const success = await login(email, password);
+    if (success) {
+      navigate(from, { replace: true });
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    const success = await loginWithGitHub();
+    if (success) {
+      navigate(from, { replace: true });
+    }
   };
 
   return (
@@ -54,7 +67,10 @@ export default function Login() {
                   id="email"
                   type="email"
                   placeholder="john@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -72,7 +88,10 @@ export default function Login() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                   <button
                     type="button"
@@ -100,11 +119,7 @@ export default function Login() {
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                  className="h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full"
-                />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
                   Sign in
@@ -124,8 +139,18 @@ export default function Login() {
               </div>
             </div>
 
-            <Button variant="outline" type="button" className="w-full gap-2">
-              <Github className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              type="button" 
+              className="w-full gap-2"
+              onClick={handleGitHubLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Github className="h-4 w-4" />
+              )}
               Continue with GitHub
             </Button>
           </form>
@@ -182,8 +207,8 @@ export default function Login() {
           <Card className="bg-card/50 backdrop-blur">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success/20">
-                  <Sparkles className="h-6 w-6 text-success" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
+                  <Sparkles className="h-6 w-6 text-chart-2" />
                 </div>
                 <div>
                   <div className="font-medium text-card-foreground">

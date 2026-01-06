@@ -1,31 +1,11 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Check, ExternalLink, RefreshCw, GitBranch, Users, Lock } from 'lucide-react';
+import { Github, Check, RefreshCw, GitBranch, Users, Lock, Star, GitFork } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { toast } from '@/hooks/use-toast';
-
-interface Repository {
-  id: string;
-  name: string;
-  fullName: string;
-  private: boolean;
-  language: string;
-  lastPush: string;
-  connected: boolean;
-}
-
-const mockRepositories: Repository[] = [
-  { id: '1', name: 'frontend-app', fullName: 'acme/frontend-app', private: false, language: 'TypeScript', lastPush: '2 hours ago', connected: true },
-  { id: '2', name: 'backend-api', fullName: 'acme/backend-api', private: true, language: 'Python', lastPush: '5 hours ago', connected: true },
-  { id: '3', name: 'mobile-app', fullName: 'acme/mobile-app', private: false, language: 'React Native', lastPush: '1 day ago', connected: false },
-  { id: '4', name: 'data-pipeline', fullName: 'acme/data-pipeline', private: true, language: 'Go', lastPush: '3 days ago', connected: false },
-];
+import { useGitHub } from '@/contexts/GitHubContext';
 
 interface GitHubConnectProps {
   isOpen: boolean;
@@ -33,57 +13,19 @@ interface GitHubConnectProps {
 }
 
 export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
-  const [isConnected, setIsConnected] = useState(true);
-  const [repositories, setRepositories] = useState(mockRepositories);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const { 
+    isConnected, 
+    isLoading, 
+    account, 
+    repositories, 
+    connect, 
+    disconnect, 
+    toggleRepository, 
+    syncRepositories 
+  } = useGitHub();
 
-  const handleGitHubAuth = () => {
-    setIsLoading(true);
-    // Simulate OAuth flow
-    setTimeout(() => {
-      setIsConnected(true);
-      setIsLoading(false);
-      toast({
-        title: 'GitHub Connected',
-        description: 'Successfully connected to your GitHub account.',
-      });
-    }, 1500);
-  };
-
-  const handleDisconnect = () => {
-    setIsConnected(false);
-    setRepositories(mockRepositories.map(r => ({ ...r, connected: false })));
-    toast({
-      title: 'GitHub Disconnected',
-      description: 'Your GitHub account has been disconnected.',
-    });
-  };
-
-  const toggleRepository = (repoId: string) => {
-    setRepositories(prev =>
-      prev.map(repo =>
-        repo.id === repoId ? { ...repo, connected: !repo.connected } : repo
-      )
-    );
-    const repo = repositories.find(r => r.id === repoId);
-    if (repo) {
-      toast({
-        title: repo.connected ? 'Repository Disconnected' : 'Repository Connected',
-        description: `${repo.fullName} has been ${repo.connected ? 'removed from' : 'added to'} CodeLens.`,
-      });
-    }
-  };
-
-  const handleSync = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: 'Repositories Synced',
-        description: 'All connected repositories have been synchronized.',
-      });
-    }, 1000);
+  const handleConnect = async () => {
+    await connect();
   };
 
   return (
@@ -115,7 +57,7 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
               </p>
             </div>
             <div className="space-y-3">
-              <Button onClick={handleGitHubAuth} disabled={isLoading} size="lg">
+              <Button onClick={handleConnect} disabled={isLoading} size="lg">
                 {isLoading ? (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -139,8 +81,8 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
                       <Github className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium">@acme-developer</p>
-                      <p className="text-sm text-muted-foreground">Connected 3 months ago</p>
+                      <p className="font-medium">@{account?.username}</p>
+                      <p className="text-sm text-muted-foreground">{account?.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -148,7 +90,7 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
                       <Check className="h-3 w-3 mr-1" />
                       Connected
                     </Badge>
-                    <Button variant="ghost" size="sm" onClick={handleSync} disabled={isLoading}>
+                    <Button variant="ghost" size="sm" onClick={syncRepositories} disabled={isLoading}>
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </Button>
                   </div>
@@ -178,26 +120,34 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
                     <Card className="hover:bg-muted/50 transition-colors">
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                          <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               {repo.private ? (
-                                <Lock className="h-4 w-4 text-muted-foreground" />
+                                <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               ) : (
-                                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                                <GitBranch className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               )}
-                              <span className="font-medium">{repo.fullName}</span>
+                              <span className="font-medium truncate">{repo.fullName}</span>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                {repo.language}
+                              </Badge>
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              {repo.language}
-                            </Badge>
+                            <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Star className="h-3 w-3" />
+                                {repo.stars}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <GitFork className="h-3 w-3" />
+                                {repo.forks}
+                              </span>
+                              <span>{repo.lastPush}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-muted-foreground">{repo.lastPush}</span>
-                            <Switch
-                              checked={repo.connected}
-                              onCheckedChange={() => toggleRepository(repo.id)}
-                            />
-                          </div>
+                          <Switch
+                            checked={repo.connected}
+                            onCheckedChange={() => toggleRepository(repo.id)}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -243,7 +193,7 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
           {isConnected && (
-            <Button variant="destructive" onClick={handleDisconnect} className="w-full sm:w-auto">
+            <Button variant="destructive" onClick={disconnect} className="w-full sm:w-auto">
               Disconnect GitHub
             </Button>
           )}
