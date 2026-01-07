@@ -141,7 +141,7 @@ export function Navbar() {
                 <Button variant="ghost" className="h-9 w-9 rounded-full p-0">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {user?.avatar || 'JD'}
+                      {user?.email?.slice(0, 2).toUpperCase() || 'JD'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -149,7 +149,7 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span className="font-medium">{user?.name || 'Guest'}</span>
+                    <span className="font-medium">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Guest'}</span>
                     <span className="text-xs text-muted-foreground">{user?.email || 'Not signed in'}</span>
                   </div>
                 </DropdownMenuLabel>

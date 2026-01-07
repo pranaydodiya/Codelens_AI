@@ -14,7 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_reviews: {
+        Row: {
+          ai_score: number | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          issues_found: number | null
+          pr_number: number | null
+          pr_title: string
+          repository_id: string | null
+          review_data: Json | null
+          review_summary: string | null
+          review_time_ms: number | null
+          status: string | null
+          suggestions_count: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          issues_found?: number | null
+          pr_number?: number | null
+          pr_title: string
+          repository_id?: string | null
+          review_data?: Json | null
+          review_summary?: string | null
+          review_time_ms?: number | null
+          status?: string | null
+          suggestions_count?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_score?: number | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          issues_found?: number | null
+          pr_number?: number | null
+          pr_title?: string
+          repository_id?: string | null
+          review_data?: Json | null
+          review_summary?: string | null
+          review_time_ms?: number | null
+          status?: string | null
+          suggestions_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_reviews_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "connected_repositories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connected_repositories: {
+        Row: {
+          connected: boolean | null
+          created_at: string
+          description: string | null
+          forks: number | null
+          full_name: string
+          github_repo_id: string | null
+          id: string
+          is_private: boolean | null
+          language: string | null
+          last_synced_at: string | null
+          name: string
+          stars: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected?: boolean | null
+          created_at?: string
+          description?: string | null
+          forks?: number | null
+          full_name: string
+          github_repo_id?: string | null
+          id?: string
+          is_private?: boolean | null
+          language?: string | null
+          last_synced_at?: string | null
+          name: string
+          stars?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected?: boolean | null
+          created_at?: string
+          description?: string | null
+          forks?: number | null
+          full_name?: string
+          github_repo_id?: string | null
+          id?: string
+          is_private?: boolean | null
+          language?: string | null
+          last_synced_at?: string | null
+          name?: string
+          stars?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      error_logs: {
+        Row: {
+          component_name: string | null
+          created_at: string
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          id: string
+          metadata: Json | null
+          page_url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component_name?: string | null
+          created_at?: string
+          error_message: string
+          error_stack?: string | null
+          error_type: string
+          id?: string
+          metadata?: Json | null
+          page_url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component_name?: string | null
+          created_at?: string
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          metadata?: Json | null
+          page_url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          ai_reviews_limit: number | null
+          ai_reviews_used: number | null
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          github_connected: boolean | null
+          github_connected_at: string | null
+          github_username: string | null
+          id: string
+          onboarding_completed: boolean | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_reviews_limit?: number | null
+          ai_reviews_used?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          github_connected?: boolean | null
+          github_connected_at?: string | null
+          github_username?: string | null
+          id?: string
+          onboarding_completed?: boolean | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_reviews_limit?: number | null
+          ai_reviews_used?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          github_connected?: boolean | null
+          github_connected_at?: string | null
+          github_username?: string | null
+          id?: string
+          onboarding_completed?: boolean | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

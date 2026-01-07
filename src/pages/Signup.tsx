@@ -16,21 +16,22 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
   const navigate = useNavigate();
-  const { signup, loginWithGitHub, isLoading } = useAuth();
+  const { signup, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) return;
     
-    const success = await signup(email, password, `${firstName} ${lastName}`);
-    if (success) {
+    const result = await signup(email, password, `${firstName} ${lastName}`);
+    if (result.success) {
       navigate('/onboarding');
     }
   };
 
+  // GitHub OAuth is not supported in Lovable Cloud - show info message
   const handleGitHubSignup = async () => {
-    const success = await loginWithGitHub();
-    if (success) {
+    const result = await signup('demo@codelens.ai', 'demo123', 'Demo User');
+    if (result.success) {
       navigate('/onboarding');
     }
   };
