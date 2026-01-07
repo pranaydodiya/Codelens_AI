@@ -31,7 +31,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, profile: userProfile } = useAuth();
   const { isConnected: githubConnected, account: githubAccount, connect: connectGitHub, disconnect: disconnectGitHub, isLoading: githubLoading } = useGitHub();
   
   const [notifications, setNotifications] = useState({
@@ -41,9 +41,10 @@ export default function Settings() {
     marketing: false,
   });
 
+  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'User';
   const [profile, setProfile] = useState({
-    firstName: user?.name?.split(' ')[0] || 'John',
-    lastName: user?.name?.split(' ')[1] || 'Doe',
+    firstName: displayName.split(' ')[0] || 'John',
+    lastName: displayName.split(' ')[1] || 'Doe',
     email: user?.email || 'john@acme.com',
     company: 'Acme Corporation',
   });
@@ -120,7 +121,7 @@ export default function Settings() {
                   <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
                       <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                        {user?.avatar || 'JD'}
+                        {displayName.split(' ').map(n => n[0]).join('').toUpperCase() || 'JD'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="space-y-2">

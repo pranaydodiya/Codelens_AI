@@ -98,21 +98,25 @@ export function AIReviewService() {
     setProgress(0);
     setIssues([]);
 
+    let currentProgress = 0;
     const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsAnalyzing(false);
-          setIssues(mockIssues);
-          toast({
-            title: 'Analysis Complete',
-            description: `Found ${mockIssues.length} issues in your code.`,
-          });
-          return 100;
-        }
-        return prev + Math.random() * 15;
-      });
+      currentProgress += Math.random() * 15;
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setProgress(100);
+        setIsAnalyzing(false);
+        setIssues(mockIssues);
+        toast({
+          title: 'Analysis Complete',
+          description: `Found ${mockIssues.length} issues in your code.`,
+        });
+      } else {
+        setProgress(currentProgress);
+      }
     }, 200);
+
+    // Cleanup on unmount - store interval ref
+    return () => clearInterval(interval);
   };
 
   const getIssueIcon = (type: ReviewIssue['type']) => {

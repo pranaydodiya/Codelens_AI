@@ -296,8 +296,8 @@ const Profile = () => {
                             <p className="text-sm text-muted-foreground">{repo.language}</p>
                           </div>
                           <Badge variant="outline" className={
-                            repo.status === 'Active' ? 'text-green-400 border-green-400/30' :
-                            repo.status === 'Review' ? 'text-yellow-400 border-yellow-400/30' :
+                            repo.status === 'connected' ? 'text-green-400 border-green-400/30' :
+                            repo.status === 'pending' ? 'text-yellow-400 border-yellow-400/30' :
                             'text-muted-foreground'
                           }>
                             {repo.status}
