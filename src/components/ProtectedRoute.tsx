@@ -1,17 +1,18 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@clerk/clerk-react';
 import { Loader2 } from 'lucide-react';
+import { sanitizeRedirectUrl } from '@/lib/security';
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -22,9 +23,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isSignedIn) {
+    // Sanitize the current path before storing it for redirect
+    const sanitizedPath = sanitizeRedirectUrl(location.pathname, '/dashboard');
     // Redirect to login, preserving the intended destination
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: { pathname: sanitizedPath } }} replace />;
   }
 
   return <>{children}</>;

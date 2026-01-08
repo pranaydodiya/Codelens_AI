@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { ClerkAuthProvider } from "@/contexts/ClerkAuthContext";
 import { GitHubProvider } from "@/contexts/GitHubContext";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { OnboardingTour } from "@/components/OnboardingTour";
@@ -40,7 +40,7 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
+        <ClerkAuthProvider>
           <GitHubProvider>
             <NotificationProvider>
               <TooltipProvider>
@@ -82,7 +82,7 @@ const App = () => (
               </TooltipProvider>
             </NotificationProvider>
           </GitHubProvider>
-        </AuthProvider>
+        </ClerkAuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </ErrorBoundary>

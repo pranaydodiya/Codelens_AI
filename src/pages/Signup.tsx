@@ -1,40 +1,19 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, Eye, EyeOff, Github, ArrowRight, Check, Loader2, Users, TrendingUp, Shield } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useAuth } from '@/contexts/AuthContext';
+import { Sparkles, Check, Users, TrendingUp, Shield } from 'lucide-react';
+import { SignUp, useAuth } from '@clerk/clerk-react';
 
 export default function Signup() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [agreed, setAgreed] = useState(false);
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!agreed) return;
-    
-    const result = await signup(email, password, `${firstName} ${lastName}`);
-    if (result.success) {
-      navigate('/onboarding');
+  // Redirect if already signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      navigate('/onboarding', { replace: true });
     }
-  };
-
-  // GitHub OAuth is not supported in Lovable Cloud - show info message
-  const handleGitHubSignup = async () => {
-    const result = await signup('demo@codelens.ai', 'demo123', 'Demo User');
-    if (result.success) {
-      navigate('/onboarding');
-    }
-  };
+  }, [isLoaded, isSignedIn, navigate]);
 
   const stats = [
     { icon: Users, value: '50K+', label: 'Developers' },
@@ -130,132 +109,26 @@ export default function Signup() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="John"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Doe"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 6 characters
-                </p>
-              </div>
-              <div className="flex items-start space-x-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={agreed}
-                  onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                />
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-muted-foreground leading-tight"
-                >
-                  I agree to the{' '}
-                  <Link to="#" className="text-primary hover:underline">
-                    Terms of Service
-                  </Link>{' '}
-                  and{' '}
-                  <Link to="#" className="text-primary hover:underline">
-                    Privacy Policy
-                  </Link>
-                </label>
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading || !agreed}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Create account
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <Button 
-              variant="outline" 
-              type="button" 
-              className="w-full gap-2"
-              onClick={handleGitHubSignup}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Github className="h-4 w-4" />
-              )}
-              Sign up with GitHub
-            </Button>
-          </form>
+          {/* Clerk SignUp Component */}
+          <SignUp 
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'bg-card border-border shadow-none',
+                headerTitle: 'hidden',
+                headerSubtitle: 'hidden',
+                socialButtonsBlockButton: 'bg-background border-border text-foreground hover:bg-muted',
+                formButtonPrimary: 'bg-primary hover:bg-primary/90',
+                formFieldInput: 'bg-background border-border text-foreground',
+                formFieldLabel: 'text-foreground',
+                footerActionLink: 'text-primary hover:text-primary/90',
+                identityPreviewText: 'text-foreground',
+                identityPreviewEditButton: 'text-primary',
+              },
+            }}
+            signInUrl="/login"
+            forceRedirectUrl="/onboarding"
+          />
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}

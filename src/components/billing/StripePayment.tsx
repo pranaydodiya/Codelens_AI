@@ -116,16 +116,16 @@ export function StripePayment() {
     switch (brand?.toLowerCase()) {
       case 'visa':
         return (
-          <div className="h-8 w-12 rounded bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center text-white text-xs font-bold">
+          <div className="h-8 w-12 rounded bg-gradient-to-r from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-xs font-bold">
             VISA
           </div>
         );
       case 'mastercard':
         return (
-          <div className="h-8 w-12 rounded bg-gradient-to-r from-red-500 to-orange-500 flex items-center justify-center">
+          <div className="h-8 w-12 rounded bg-gradient-to-r from-destructive to-warning flex items-center justify-center">
             <div className="flex -space-x-2">
-              <div className="h-4 w-4 rounded-full bg-red-600" />
-              <div className="h-4 w-4 rounded-full bg-yellow-400" />
+              <div className="h-4 w-4 rounded-full bg-destructive" />
+              <div className="h-4 w-4 rounded-full bg-warning" />
             </div>
           </div>
         );
