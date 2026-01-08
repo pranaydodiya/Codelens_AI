@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Moon, Sun, Monitor, Search, Menu, LogOut, User, Settings, CreditCard } from 'lucide-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { MobileSidebar } from './MobileSidebar';
 import { CommandSearch } from '@/components/CommandSearch';
@@ -22,7 +22,8 @@ import { CommandSearch } from '@/components/CommandSearch';
 export function Navbar() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { unreadCount } = useNotifications();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -37,10 +38,14 @@ export function Navbar() {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
+
+  const userEmail = user?.primaryEmailAddress?.emailAddress || '';
+  const userName = user?.fullName || userEmail.split('@')[0] || 'Guest';
+  const userInitials = userName.slice(0, 2).toUpperCase();
 
   return (
     <>
@@ -140,8 +145,9 @@ export function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-9 w-9 rounded-full p-0">
                   <Avatar className="h-8 w-8">
+                    {user?.imageUrl && <AvatarImage src={user.imageUrl} alt={userName} />}
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      {user?.email?.slice(0, 2).toUpperCase() || 'JD'}
+                      {userInitials}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -149,8 +155,8 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col">
-                    <span className="font-medium">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Guest'}</span>
-                    <span className="text-xs text-muted-foreground">{user?.email || 'Not signed in'}</span>
+                    <span className="font-medium">{userName}</span>
+                    <span className="text-xs text-muted-foreground">{userEmail || 'Not signed in'}</span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

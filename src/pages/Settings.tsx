@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,17 +22,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { useGitHub } from '@/contexts/GitHubContext';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 
 export default function Settings() {
   const { theme, setTheme } = useTheme();
-  const { user, profile: userProfile } = useAuth();
+  const { user } = useUser();
   const { isConnected: githubConnected, account: githubAccount, connect: connectGitHub, disconnect: disconnectGitHub, isLoading: githubLoading } = useGitHub();
   
   const [notifications, setNotifications] = useState({
@@ -41,11 +41,11 @@ export default function Settings() {
     marketing: false,
   });
 
-  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayName = user?.fullName || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User';
   const [profile, setProfile] = useState({
-    firstName: displayName.split(' ')[0] || 'John',
-    lastName: displayName.split(' ')[1] || 'Doe',
-    email: user?.email || 'john@acme.com',
+    firstName: user?.firstName || displayName.split(' ')[0] || 'John',
+    lastName: user?.lastName || displayName.split(' ')[1] || 'Doe',
+    email: user?.primaryEmailAddress?.emailAddress || 'john@acme.com',
     company: 'Acme Corporation',
   });
 
@@ -120,6 +120,7 @@ export default function Settings() {
                 <CardContent className="space-y-6">
                   <div className="flex items-center gap-6">
                     <Avatar className="h-20 w-20">
+                      {user?.imageUrl && <AvatarImage src={user.imageUrl} alt={displayName} />}
                       <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
                         {displayName.split(' ').map(n => n[0]).join('').toUpperCase() || 'JD'}
                       </AvatarFallback>
