@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { BackButton } from '@/components/ui/back-button';
 import { AIBadge } from '@/components/ui/ai-badge';
+import { sanitizeInput } from '@/lib/security';
+import { useClipboard } from '@/hooks/useClipboard';
 
 const sampleSummary = {
   title: "Authentication Module Summary",
@@ -32,10 +34,16 @@ export default function AICodeSummary() {
   const [code, setCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useClipboard();
 
   const handleGenerate = () => {
-    if (!code.trim()) return;
+    const trimmedCode = code.trim();
+    if (!trimmedCode) return;
+    
+    // Sanitize user input before processing
+    const sanitizedCode = sanitizeInput(trimmedCode);
+    if (!sanitizedCode) return;
+
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
@@ -44,9 +52,7 @@ export default function AICodeSummary() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(sampleSummary, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    copyToClipboard(JSON.stringify(sampleSummary, null, 2), 'Summary copied to clipboard');
   };
 
   return (

@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { STATS, REPOSITORIES } from '@/lib/constants';
+import { sanitizeExternalUrl, sanitizeGitHubUsername, sanitizeTwitterUsername } from '@/lib/security';
 
 const Profile = () => {
   const user = {
@@ -113,18 +114,39 @@ const Profile = () => {
                       <Calendar className="h-4 w-4" />
                       Joined {user.joinedDate}
                     </span>
-                    <a href={user.website} className="flex items-center gap-1 text-primary hover:underline">
-                      <LinkIcon className="h-4 w-4" />
-                      Website
-                    </a>
-                    <a href={`https://github.com/${user.github}`} className="flex items-center gap-1 hover:text-foreground">
-                      <Github className="h-4 w-4" />
-                      {user.github}
-                    </a>
-                    <a href={`https://twitter.com/${user.twitter}`} className="flex items-center gap-1 hover:text-foreground">
-                      <Twitter className="h-4 w-4" />
-                      {user.twitter}
-                    </a>
+                    {sanitizeExternalUrl(user.website) && (
+                      <a 
+                        href={sanitizeExternalUrl(user.website)!} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <LinkIcon className="h-4 w-4" />
+                        Website
+                      </a>
+                    )}
+                    {sanitizeGitHubUsername(user.github) && (
+                      <a 
+                        href={`https://github.com/${sanitizeGitHubUsername(user.github)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:text-foreground"
+                      >
+                        <Github className="h-4 w-4" />
+                        {sanitizeGitHubUsername(user.github)}
+                      </a>
+                    )}
+                    {sanitizeTwitterUsername(user.twitter) && (
+                      <a 
+                        href={`https://twitter.com/${sanitizeTwitterUsername(user.twitter)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:text-foreground"
+                      >
+                        <Twitter className="h-4 w-4" />
+                        {sanitizeTwitterUsername(user.twitter)}
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

@@ -11,6 +11,9 @@ import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { sanitizeJsonInput, isValidApiKeyFormat } from '@/lib/security';
+import { toast } from '@/hooks/use-toast';
+import { useClipboard } from '@/hooks/useClipboard';
 
 const sampleResponse = {
   status: 200,
@@ -60,9 +63,29 @@ export default function APIPlayground() {
   const [apiKey, setApiKey] = useState('clk_xxxxxxxxxxxxxxxxxxxxxxxx');
   const [isLoading, setIsLoading] = useState(false);
   const [showResponse, setShowResponse] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useClipboard();
 
   const handleSend = () => {
+    // Validate API key format
+    if (!isValidApiKeyFormat(apiKey)) {
+      toast({
+        title: 'Invalid API Key',
+        description: 'Please enter a valid API key format',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate JSON request body
+    if (selectedEndpoint?.method === 'POST' && !sanitizeJsonInput(requestBody)) {
+      toast({
+        title: 'Invalid JSON',
+        description: 'Please enter valid JSON in the request body',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -71,9 +94,7 @@ export default function APIPlayground() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(sampleResponse, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    copyToClipboard(JSON.stringify(sampleResponse, null, 2), 'Response copied to clipboard');
   };
 
   const selectedEndpoint = endpoints.find(e => e.value === endpoint);

@@ -22,6 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
+import { useClipboard } from '@/hooks/useClipboard';
 
 interface ReviewIssue {
   id: string;
@@ -83,6 +84,7 @@ export function AIReviewService() {
   const [issues, setIssues] = useState<ReviewIssue[]>([]);
   const [codeInput, setCodeInput] = useState('');
   const [selectedIssue, setSelectedIssue] = useState<ReviewIssue | null>(null);
+  const { copyToClipboard } = useClipboard();
 
   const runAnalysis = () => {
     if (!codeInput.trim()) {
@@ -137,9 +139,8 @@ export function AIReviewService() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied to clipboard' });
+  const handleCopy = (text: string) => {
+    copyToClipboard(text, 'Copied to clipboard');
   };
 
   const issueStats = {
@@ -303,7 +304,7 @@ export function AIReviewService() {
                                             variant="outline"
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              copyToClipboard(issue.suggestion!);
+                                              handleCopy(issue.suggestion!);
                                             }}
                                           >
                                             <Copy className="h-3 w-3 mr-1" />

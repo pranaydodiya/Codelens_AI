@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BackButton } from '@/components/ui/back-button';
 import { AIBadge } from '@/components/ui/ai-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { sanitizeInput } from '@/lib/security';
+import { useClipboard } from '@/hooks/useClipboard';
 
 const generatedCode = `import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -118,10 +120,16 @@ export default function AICodeGenerator() {
   const [language, setLanguage] = useState('typescript');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showCode, setShowCode] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copyToClipboard } = useClipboard();
 
   const handleGenerate = () => {
-    if (!prompt.trim()) return;
+    const trimmedPrompt = prompt.trim();
+    if (!trimmedPrompt) return;
+    
+    // Sanitize user input before processing
+    const sanitizedPrompt = sanitizeInput(trimmedPrompt);
+    if (!sanitizedPrompt) return;
+
     setIsGenerating(true);
     setTimeout(() => {
       setIsGenerating(false);
@@ -130,9 +138,7 @@ export default function AICodeGenerator() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(generatedCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    copyToClipboard(generatedCode, 'Code copied to clipboard');
   };
 
   return (

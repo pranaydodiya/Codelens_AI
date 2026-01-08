@@ -21,6 +21,7 @@ import {
   Code,
   Play,
 } from 'lucide-react';
+import { sanitizeRedirectUrl } from '@/lib/security';
 
 const pages = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -48,7 +49,8 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
 
   const handleSelect = (href: string) => {
     onOpenChange(false);
-    navigate(href);
+    const sanitizedHref = sanitizeRedirectUrl(href, '/dashboard');
+    navigate(sanitizedHref);
   };
 
   return (
