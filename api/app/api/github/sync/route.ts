@@ -8,6 +8,7 @@ import { requireAuth } from '@/lib/auth';
 import { getGitHubConnection } from '@/lib/db-github';
 import { getUserRepositories as fetchGitHubRepos } from '@/lib/services/github-service';
 import { syncRepositoriesToDatabase } from '@/lib/db-github';
+import { handleApiError, createCorsOptionsResponse } from '@/lib/api-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,35 +55,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Sync error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to sync repositories',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to sync repositories');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['POST', 'OPTIONS']);
 }
 

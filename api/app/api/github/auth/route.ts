@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { generateState, getGitHubAuthUrl } from '@/lib/github-auth';
 import { cookies } from 'next/headers';
+import { handleApiError } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,8 +34,6 @@ export async function GET(request: NextRequest) {
     // Redirect to GitHub
     return NextResponse.redirect(authUrl);
   } catch (error) {
-    console.error('GitHub auth error:', error);
-
     // Handle authentication errors
     if (error instanceof Error && error.message === 'Unauthorized') {
       return NextResponse.json(

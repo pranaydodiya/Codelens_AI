@@ -9,6 +9,7 @@ import { validateRequest, codeSummarySchema } from '@/lib/validation';
 import { generateCodeSummary } from '@/lib/services/ai-service';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { storeAIRequest, updateAIRequest } from '@/lib/db';
+import { handleApiError, createCorsOptionsResponse, checkRateLimitOrFail, createValidationErrorResponse, createSuccessResponse } from '@/lib/api-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,30 +17,19 @@ export async function POST(request: NextRequest) {
     const user = await requireAuth();
 
     // Check rate limit
-    const rateLimit = checkRateLimit(user.userId, 'ai');
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { 
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': '20',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': rateLimit.resetAt.toString(),
-          },
-        }
-      );
+    const rateLimitError = checkRateLimitOrFail(user.userId, 'ai');
+    if (rateLimitError) {
+      return rateLimitError;
     }
+
+    const rateLimit = checkRateLimit(user.userId, 'ai');
 
     // Parse and validate request body
     const body = await request.json();
     const validation = validateRequest(codeSummarySchema, body);
 
     if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      );
+      return createValidationErrorResponse(validation.error);
     }
 
     // Store request in database
@@ -72,16 +62,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Return success response with rate limit headers
-      return NextResponse.json({
-        success: true,
-        data: summary,
-      }, {
-        headers: {
-          'X-RateLimit-Limit': '20',
-          'X-RateLimit-Remaining': rateLimit.remaining.toString(),
-          'X-RateLimit-Reset': rateLimit.resetAt.toString(),
-        },
-      });
+      return createSuccessResponse(summary, rateLimit);
     } catch (error) {
       const responseTime = Date.now() - startTime;
       
@@ -95,35 +76,12 @@ export async function POST(request: NextRequest) {
       throw error;
     }
   } catch (error) {
-    console.error('Summary API error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to generate code summary',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to generate code summary');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['POST', 'OPTIONS']);
 }
 

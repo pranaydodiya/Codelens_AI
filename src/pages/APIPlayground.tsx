@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -202,8 +203,9 @@ export default function APIPlayground() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">API Key</label>
+                  <Label htmlFor="api-key-input" className="text-sm text-muted-foreground">API Key</Label>
                   <Input
+                    id="api-key-input"
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
@@ -212,9 +214,9 @@ export default function APIPlayground() {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Endpoint</label>
+                  <Label htmlFor="endpoint-select" className="text-sm text-muted-foreground">Endpoint</Label>
                   <Select value={endpoint} onValueChange={setEndpoint}>
-                    <SelectTrigger>
+                    <SelectTrigger id="endpoint-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

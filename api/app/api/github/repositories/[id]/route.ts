@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { updateRepositoryConnection } from '@/lib/db-github';
+import { handleApiError, createCorsOptionsResponse, createValidationErrorResponse } from '@/lib/api-utils';
 
 export async function POST(
   request: NextRequest,
@@ -19,10 +20,7 @@ export async function POST(
     const { connected } = body;
 
     if (typeof connected !== 'boolean') {
-      return NextResponse.json(
-        { error: 'Invalid request. connected must be a boolean' },
-        { status: 400 }
-      );
+      return createValidationErrorResponse('Invalid request. connected must be a boolean');
     }
 
     // Update repository connection status
@@ -33,35 +31,12 @@ export async function POST(
       message: connected ? 'Repository connected' : 'Repository disconnected',
     });
   } catch (error) {
-    console.error('Repository connection error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to update repository connection',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to update repository connection');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['POST', 'OPTIONS']);
 }
 

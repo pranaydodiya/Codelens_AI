@@ -167,11 +167,11 @@ export function sanitizeInput(input: string): string {
     return '';
   }
   return input
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#x27;')
+    .replaceAll('/', '&#x2F;');
 }
 
 /**
@@ -245,7 +245,7 @@ export function sanitizeCssContent(css: string): string {
 
   let sanitized = css;
   dangerousPatterns.forEach(pattern => {
-    sanitized = sanitized.replace(pattern, '');
+    sanitized = sanitized.replaceAll(pattern, '');
   });
 
   return sanitized;
@@ -264,11 +264,11 @@ export function sanitizeFilePath(filePath: string): string | null {
     return null;
   }
 
-  // Remove leading/trailing slashes and normalize
-  const normalized = filePath.replace(/^\/+|\/+$/g, '');
+  // Remove leading/trailing slashes and normalize (explicit grouping for precedence)
+  const normalized = filePath.replaceAll(/(^\/+)|(\/+$)/g, '');
 
-  // Check for dangerous characters
-  if (/[<>:"|?*\x00-\x1f]/.test(normalized)) {
+  // Check for dangerous characters: path separators and ASCII control characters (0x00-0x1F)
+  if (/[<>:"|?*]/.test(normalized) || /[\x00-\x1F]/.test(normalized)) {
     return null;
   }
 

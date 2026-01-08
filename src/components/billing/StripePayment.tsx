@@ -45,7 +45,7 @@ export function StripePayment() {
   });
 
   const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const v = value.replaceAll(/\s+/g, '').replaceAll(/[^0-9]/gi, '');
     const matches = v.match(/\d{4,16}/g);
     const match = (matches && matches[0]) || '';
     const parts = [];
@@ -56,7 +56,7 @@ export function StripePayment() {
   };
 
   const formatExpiry = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    const v = value.replaceAll(/\s+/g, '').replaceAll(/[^0-9]/gi, '');
     if (v.length >= 2) {
       return v.slice(0, 2) + '/' + v.slice(2, 4);
     }
@@ -79,7 +79,7 @@ export function StripePayment() {
         id: Date.now().toString(),
         type: 'card',
         brand: cardForm.number.startsWith('4') ? 'Visa' : 'Mastercard',
-        last4: cardForm.number.replace(/\s/g, '').slice(-4),
+        last4: cardForm.number.replaceAll(/\s/g, '').slice(-4),
         expiry: cardForm.expiry,
         isDefault: paymentMethods.length === 0,
       };
@@ -307,7 +307,7 @@ export function StripePayment() {
                   value={cardForm.cvc}
                   onChange={(e) => setCardForm(prev => ({ 
                     ...prev, 
-                    cvc: e.target.value.replace(/\D/g, '').slice(0, 4) 
+                    cvc: e.target.value.replaceAll(/\D/g, '').slice(0, 4) 
                   }))}
                   maxLength={4}
                 />

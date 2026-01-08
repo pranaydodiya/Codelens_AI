@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BackButton } from '@/components/ui/back-button';
 import { AIBadge } from '@/components/ui/ai-badge';
@@ -105,9 +106,9 @@ export default function AICodeGenerator() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">Template</label>
+                    <Label htmlFor="template-select" className="text-sm text-muted-foreground">Template</Label>
                     <Select value={template} onValueChange={setTemplate}>
-                      <SelectTrigger>
+                      <SelectTrigger id="template-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -118,9 +119,9 @@ export default function AICodeGenerator() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">Language</label>
+                    <Label htmlFor="language-select" className="text-sm text-muted-foreground">Language</Label>
                     <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger>
+                      <SelectTrigger id="language-select">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -133,8 +134,9 @@ export default function AICodeGenerator() {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Describe what you want to build</label>
+                  <Label htmlFor="prompt-textarea" className="text-sm text-muted-foreground">Describe what you want to build</Label>
                   <Textarea
+                    id="prompt-textarea"
                     placeholder="Create an authentication hook with login, logout, and session management using React Query..."
                     className="min-h-[200px]"
                     value={prompt}

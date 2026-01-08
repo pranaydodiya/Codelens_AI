@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { getGitHubConnection, deleteGitHubConnection } from '@/lib/db-github';
 import { getGitHubUser } from '@/lib/services/github-service';
+import { handleApiError, createCorsOptionsResponse } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,23 +55,7 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error('GitHub account API error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to fetch GitHub account',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch GitHub account');
   }
 }
 
@@ -87,34 +72,11 @@ export async function DELETE(request: NextRequest) {
       message: 'GitHub account disconnected',
     });
   } catch (error) {
-    console.error('GitHub disconnect error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to disconnect GitHub account',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to disconnect GitHub account');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['GET', 'DELETE', 'OPTIONS']);
 }

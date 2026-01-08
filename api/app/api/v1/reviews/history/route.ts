@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { getUserAIHistory } from '@/lib/db';
+import { handleApiError, createCorsOptionsResponse } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,8 +16,8 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
     const requestType = searchParams.get('type') as 'summary' | 'generate' | 'analyze' | null;
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const limit = Number.parseInt(searchParams.get('limit') || '50', 10);
+    const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
 
     // Fetch history from database
     const history = await getUserAIHistory(
@@ -31,35 +32,12 @@ export async function GET(request: NextRequest) {
       data: history,
     });
   } catch (error) {
-    console.error('History API error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to fetch review history',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch review history');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['GET', 'OPTIONS']);
 }
 

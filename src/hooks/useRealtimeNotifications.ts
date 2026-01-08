@@ -43,6 +43,7 @@ function generateNotification(): RealtimeNotification {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2)}`,
     type: template.type,
     title: template.title,
+    // Single template variable substitution - using replace() is intentional
     description: description.replace('${pr}', prNumber.toString()),
     time: 'Just now',
     read: false,

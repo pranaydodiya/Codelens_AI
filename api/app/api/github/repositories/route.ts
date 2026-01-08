@@ -8,6 +8,7 @@ import { requireAuth } from '@/lib/auth';
 import { getGitHubConnection } from '@/lib/db-github';
 import { getUserRepositories as fetchGitHubRepos } from '@/lib/services/github-service';
 import { getUserRepositories as getDbRepos, syncRepositoriesToDatabase } from '@/lib/db-github';
+import { handleApiError, createCorsOptionsResponse } from '@/lib/api-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,23 +49,7 @@ export async function GET(request: NextRequest) {
       data: repositories,
     });
   } catch (error) {
-    console.error('Repositories API error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to fetch repositories',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to fetch repositories');
   }
 }
 
@@ -114,35 +99,12 @@ export async function POST(request: NextRequest) {
       message: 'Repositories synced successfully',
     });
   } catch (error) {
-    console.error('Sync repositories error:', error);
-
-    // Handle authentication errors
-    if (error instanceof Error && error.message === 'Unauthorized') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    // Handle other errors
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : 'Failed to sync repositories',
-      },
-      { status: 500 }
-    );
+    return handleApiError(error, 'Failed to sync repositories');
   }
 }
 
 // Handle OPTIONS for CORS
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+  return createCorsOptionsResponse(['GET', 'POST', 'OPTIONS']);
 }
 
