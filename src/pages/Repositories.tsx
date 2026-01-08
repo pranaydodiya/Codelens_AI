@@ -24,7 +24,7 @@ export default function Repositories() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const navigate = useNavigate();
-  const { isConnected, repositories, getConnectedRepos } = useGitHub();
+  const { isConnected, isLoading, repositories, getConnectedRepos } = useGitHub();
 
   const connectedRepos = getConnectedRepos();
 
@@ -89,8 +89,22 @@ export default function Repositories() {
           </motion.div>
         )}
 
+        {/* Loading State */}
+        {isLoading && isConnected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-16"
+          >
+            <div className="text-center">
+              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Loading repositories...</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Connected State */}
-        {isConnected && (
+        {isConnected && !isLoading && (
           <>
             {/* Search and Filter */}
             <motion.div

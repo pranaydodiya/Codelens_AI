@@ -14,36 +14,19 @@ import { Badge } from '@/components/ui/badge';
 import { sanitizeJsonInput, isValidApiKeyFormat } from '@/lib/security';
 import { toast } from '@/hooks/use-toast';
 import { useClipboard } from '@/hooks/useClipboard';
+import { apiClient, ApiClientError } from '@/lib/api-client';
 
-const sampleResponse = {
-  status: 200,
-  time: "234ms",
-  data: {
-    success: true,
-    review: {
-      id: "rev_abc123",
-      score: 92,
-      summary: "Excellent code quality with proper error handling",
-      issues: [
-        {
-          severity: "warning",
-          message: "Consider adding input validation",
-          line: 45
-        }
-      ],
-      suggestions: [
-        "Add unit tests for edge cases",
-        "Consider caching repeated API calls"
-      ]
-    }
-  }
-};
+interface ApiResponse {
+  status: number;
+  time: string;
+  data: unknown;
+  error?: string;
+}
 
 const endpoints = [
   { value: 'analyze', label: 'POST /api/v1/analyze', method: 'POST' },
-  { value: 'review', label: 'POST /api/v1/review', method: 'POST' },
   { value: 'summary', label: 'POST /api/v1/summary', method: 'POST' },
-  { value: 'repos', label: 'GET /api/v1/repositories', method: 'GET' },
+  { value: 'generate', label: 'POST /api/v1/generate', method: 'POST' },
   { value: 'history', label: 'GET /api/v1/reviews/history', method: 'GET' },
 ];
 
@@ -62,21 +45,11 @@ export default function APIPlayground() {
   const [requestBody, setRequestBody] = useState(sampleRequest);
   const [apiKey, setApiKey] = useState('clk_xxxxxxxxxxxxxxxxxxxxxxxx');
   const [isLoading, setIsLoading] = useState(false);
-  const [showResponse, setShowResponse] = useState(false);
+  const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
   const { copied, copyToClipboard } = useClipboard();
 
-  const handleSend = () => {
-    // Validate API key format
-    if (!isValidApiKeyFormat(apiKey)) {
-      toast({
-        title: 'Invalid API Key',
-        description: 'Please enter a valid API key format',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate JSON request body
+  const handleSend = async () => {
+    // Validate JSON request body for POST requests
     if (selectedEndpoint?.method === 'POST' && !sanitizeJsonInput(requestBody)) {
       toast({
         title: 'Invalid JSON',
@@ -87,14 +60,77 @@ export default function APIPlayground() {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    setApiResponse(null);
+    const startTime = performance.now();
+
+    try {
+      let response: unknown;
+      const endpointPath = `/api/v1/${endpoint}`;
+
+      if (selectedEndpoint?.method === 'GET') {
+        response = await apiClient.get(endpointPath);
+      } else {
+        // Parse request body
+        const body = JSON.parse(requestBody);
+        response = await apiClient.post(endpointPath, body);
+      }
+
+      const endTime = performance.now();
+      const responseTime = `${Math.round(endTime - startTime)}ms`;
+
+      setApiResponse({
+        status: 200,
+        time: responseTime,
+        data: response,
+      });
+
+      toast({
+        title: 'Request Successful',
+        description: `Response received in ${responseTime}`,
+      });
+    } catch (error) {
+      const endTime = performance.now();
+      const responseTime = `${Math.round(endTime - startTime)}ms`;
+
+      if (error instanceof ApiClientError) {
+        setApiResponse({
+          status: error.status || 500,
+          time: responseTime,
+          data: null,
+          error: error.message,
+        });
+
+        toast({
+          title: 'Request Failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        setApiResponse({
+          status: 500,
+          time: responseTime,
+          data: null,
+          error: error instanceof Error ? error.message : 'Unknown error occurred',
+        });
+
+        toast({
+          title: 'Request Failed',
+          description: 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+      }
+    } finally {
       setIsLoading(false);
-      setShowResponse(true);
-    }, 1500);
+    }
   };
 
   const handleCopy = () => {
-    copyToClipboard(JSON.stringify(sampleResponse, null, 2), 'Response copied to clipboard');
+    if (apiResponse) {
+      const copyData = apiResponse.error 
+        ? { error: apiResponse.error }
+        : apiResponse.data;
+      copyToClipboard(JSON.stringify(copyData, null, 2), 'Response copied to clipboard');
+    }
   };
 
   const selectedEndpoint = endpoints.find(e => e.value === endpoint);
@@ -262,13 +298,20 @@ export default function APIPlayground() {
                     <Globe className="h-4 w-4 text-primary" />
                     Response
                   </CardTitle>
-                  {showResponse && (
+                  {apiResponse && (
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-success/10 text-success border-success/20">
-                        200 OK
+                      <Badge 
+                        variant="outline" 
+                        className={
+                          apiResponse.status >= 200 && apiResponse.status < 300
+                            ? "bg-success/10 text-success border-success/20"
+                            : "bg-destructive/10 text-destructive border-destructive/20"
+                        }
+                      >
+                        {apiResponse.status} {apiResponse.status >= 200 && apiResponse.status < 300 ? 'OK' : 'Error'}
                       </Badge>
                       <Badge variant="outline">
-                        {sampleResponse.time}
+                        {apiResponse.time}
                       </Badge>
                       <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
                         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -278,7 +321,7 @@ export default function APIPlayground() {
                 </div>
               </CardHeader>
               <CardContent>
-                {!showResponse ? (
+                {!apiResponse ? (
                   <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center space-y-2">
                       <Globe className="h-12 w-12 mx-auto opacity-20" />
@@ -292,8 +335,11 @@ export default function APIPlayground() {
                   >
                     <ScrollArea className="h-[400px]">
                       <pre className="p-4 rounded-lg bg-muted/50 text-sm font-mono overflow-x-auto">
-                        <code className="text-foreground">
-                          {JSON.stringify(sampleResponse.data, null, 2)}
+                        <code className={apiResponse.error ? "text-destructive" : "text-foreground"}>
+                          {apiResponse.error 
+                            ? JSON.stringify({ error: apiResponse.error }, null, 2)
+                            : JSON.stringify(apiResponse.data, null, 2)
+                          }
                         </code>
                       </pre>
                     </ScrollArea>

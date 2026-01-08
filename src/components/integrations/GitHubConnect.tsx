@@ -110,7 +110,12 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
                 </span>
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {repositories.map((repo, i) => (
+                {repositories.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    No repositories found. Click sync to fetch from GitHub.
+                  </div>
+                ) : (
+                  repositories.map((repo, i) => (
                   <motion.div
                     key={repo.id}
                     initial={{ opacity: 0, x: -10 }}
@@ -152,7 +157,8 @@ export function GitHubConnect({ isOpen, onClose }: GitHubConnectProps) {
                       </CardContent>
                     </Card>
                   </motion.div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 

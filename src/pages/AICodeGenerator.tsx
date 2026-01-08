@@ -12,92 +12,7 @@ import { AIBadge } from '@/components/ui/ai-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { sanitizeInput } from '@/lib/security';
 import { useClipboard } from '@/hooks/useClipboard';
-
-const generatedCode = `import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'user' | 'guest';
-}
-
-interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
-export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true,
-  });
-
-  const { data: session, isLoading } = useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const response = await fetch('/api/auth/session');
-      if (!response.ok) throw new Error('Failed to fetch session');
-      return response.json();
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: { email: string; password: string }) => {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials),
-      });
-      if (!response.ok) throw new Error('Login failed');
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setAuthState({
-        user: data.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    },
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    },
-    onSuccess: () => {
-      setAuthState({
-        user: null,
-        isAuthenticated: false,
-        isLoading: false,
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (!isLoading && session) {
-      setAuthState({
-        user: session.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-    } else if (!isLoading) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
-    }
-  }, [session, isLoading]);
-
-  return {
-    ...authState,
-    login: loginMutation.mutate,
-    logout: logoutMutation.mutate,
-    isLoginLoading: loginMutation.isPending,
-    isLogoutLoading: logoutMutation.isPending,
-  };
-}`;
+import { useAIGenerator } from '@/hooks/useAIGenerator';
 
 const templates = [
   { value: 'hook', label: 'React Hook' },
@@ -116,11 +31,11 @@ const languages = [
 
 export default function AICodeGenerator() {
   const [prompt, setPrompt] = useState('');
-  const [template, setTemplate] = useState('hook');
-  const [language, setLanguage] = useState('typescript');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showCode, setShowCode] = useState(false);
+  const [template, setTemplate] = useState<'hook' | 'component' | 'api' | 'util' | 'test'>('hook');
+  const [language, setLanguage] = useState<'typescript' | 'javascript' | 'python' | 'go'>('typescript');
+  const [generatedCode, setGeneratedCode] = useState<string>('');
   const { copied, copyToClipboard } = useClipboard();
+  const { mutate: generateCode, isPending: isGenerating } = useAIGenerator();
 
   const handleGenerate = () => {
     const trimmedPrompt = prompt.trim();
@@ -130,15 +45,24 @@ export default function AICodeGenerator() {
     const sanitizedPrompt = sanitizeInput(trimmedPrompt);
     if (!sanitizedPrompt) return;
 
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      setShowCode(true);
-    }, 2500);
+    generateCode(
+      {
+        prompt: sanitizedPrompt,
+        template,
+        language,
+      },
+      {
+        onSuccess: (code) => {
+          setGeneratedCode(code);
+        },
+      }
+    );
   };
 
   const handleCopy = () => {
-    copyToClipboard(generatedCode, 'Code copied to clipboard');
+    if (generatedCode) {
+      copyToClipboard(generatedCode, 'Code copied to clipboard');
+    }
   };
 
   return (
@@ -253,7 +177,7 @@ export default function AICodeGenerator() {
                     <Code className="h-4 w-4 text-primary" />
                     Generated Code
                   </CardTitle>
-                  {showCode && (
+                  {generatedCode && (
                     <div className="flex items-center gap-2">
                       <AIBadge variant="small" />
                       <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
@@ -265,7 +189,7 @@ export default function AICodeGenerator() {
                 </div>
               </CardHeader>
               <CardContent>
-                {!showCode ? (
+                {!generatedCode ? (
                   <div className="h-[500px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center space-y-2">
                       <Code className="h-12 w-12 mx-auto opacity-20" />

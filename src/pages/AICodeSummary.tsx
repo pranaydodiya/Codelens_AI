@@ -9,32 +9,13 @@ import { BackButton } from '@/components/ui/back-button';
 import { AIBadge } from '@/components/ui/ai-badge';
 import { sanitizeInput } from '@/lib/security';
 import { useClipboard } from '@/hooks/useClipboard';
-
-const sampleSummary = {
-  title: "Authentication Module Summary",
-  overview: "This code implements a secure OAuth2 authentication flow with token refresh capabilities. It provides a context-based approach for managing user sessions across the React application.",
-  keyComponents: [
-    "AuthProvider - Main context provider managing auth state",
-    "TokenManager - Handles JWT token validation and refresh",
-    "AuthStorage - Secure storage abstraction for tokens",
-    "useAuth hook - Custom hook for accessing auth context"
-  ],
-  complexity: "Medium",
-  linesOfCode: 245,
-  functions: 12,
-  dependencies: ["react", "jwt-decode", "axios"],
-  securityNotes: [
-    "Uses PKCE flow for enhanced security",
-    "Implements automatic token refresh",
-    "Stores tokens in secure HTTP-only cookies"
-  ]
-};
+import { useAISummary, type CodeSummaryResponse } from '@/hooks/useAISummary';
 
 export default function AICodeSummary() {
   const [code, setCode] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  const [summary, setSummary] = useState<CodeSummaryResponse | null>(null);
   const { copied, copyToClipboard } = useClipboard();
+  const { mutate: generateSummary, isPending: isGenerating } = useAISummary();
 
   const handleGenerate = () => {
     const trimmedCode = code.trim();
@@ -44,15 +25,20 @@ export default function AICodeSummary() {
     const sanitizedCode = sanitizeInput(trimmedCode);
     if (!sanitizedCode) return;
 
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      setShowSummary(true);
-    }, 2000);
+    generateSummary(
+      { code: sanitizedCode },
+      {
+        onSuccess: (data) => {
+          setSummary(data);
+        },
+      }
+    );
   };
 
   const handleCopy = () => {
-    copyToClipboard(JSON.stringify(sampleSummary, null, 2), 'Summary copied to clipboard');
+    if (summary) {
+      copyToClipboard(JSON.stringify(summary, null, 2), 'Summary copied to clipboard');
+    }
   };
 
   return (
@@ -139,11 +125,11 @@ const handleAuth = async () => {
                     <Sparkles className="h-4 w-4 text-primary" />
                     AI Summary
                   </CardTitle>
-                  {showSummary && <AIBadge variant="small" />}
+                  {summary && <AIBadge variant="small" />}
                 </div>
               </CardHeader>
               <CardContent>
-                {!showSummary ? (
+                {!summary ? (
                   <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                     <div className="text-center space-y-2">
                       <Sparkles className="h-12 w-12 mx-auto opacity-20" />
@@ -165,48 +151,65 @@ const handleAuth = async () => {
                     
                     <div className="space-y-4 text-sm">
                       <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                        <h3 className="font-semibold text-foreground mb-2">{sampleSummary.title}</h3>
-                        <p className="text-muted-foreground">{sampleSummary.overview}</p>
+                        <h3 className="font-semibold text-foreground mb-2">{summary.title}</h3>
+                        <p className="text-muted-foreground">{summary.overview}</p>
                       </div>
                       
                       <div className="grid grid-cols-3 gap-3">
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <div className="text-lg font-bold text-foreground">{sampleSummary.linesOfCode}</div>
+                          <div className="text-lg font-bold text-foreground">{summary.linesOfCode}</div>
                           <div className="text-xs text-muted-foreground">Lines</div>
                         </div>
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <div className="text-lg font-bold text-foreground">{sampleSummary.functions}</div>
+                          <div className="text-lg font-bold text-foreground">{summary.functions}</div>
                           <div className="text-xs text-muted-foreground">Functions</div>
                         </div>
                         <div className="p-3 rounded-lg bg-muted/50 text-center">
-                          <div className="text-lg font-bold text-primary">{sampleSummary.complexity}</div>
+                          <div className="text-lg font-bold text-primary">{summary.complexity}</div>
                           <div className="text-xs text-muted-foreground">Complexity</div>
                         </div>
                       </div>
                       
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2">Key Components</h4>
-                        <ul className="space-y-1">
-                          {sampleSummary.keyComponents.map((comp, i) => (
-                            <li key={i} className="text-muted-foreground flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              {comp}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      {summary.keyComponents.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-2">Key Components</h4>
+                          <ul className="space-y-1">
+                            {summary.keyComponents.map((comp, i) => (
+                              <li key={i} className="text-muted-foreground flex items-start gap-2">
+                                <span className="text-primary">•</span>
+                                {comp}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                       
-                      <div>
-                        <h4 className="font-medium text-foreground mb-2">Security Notes</h4>
-                        <ul className="space-y-1">
-                          {sampleSummary.securityNotes.map((note, i) => (
-                            <li key={i} className="text-muted-foreground flex items-start gap-2">
-                              <span className="text-success">✓</span>
-                              {note}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      {summary.dependencies.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-2">Dependencies</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {summary.dependencies.map((dep, i) => (
+                              <span key={i} className="px-2 py-1 rounded bg-muted text-xs text-muted-foreground">
+                                {dep}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {summary.securityNotes.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-foreground mb-2">Security Notes</h4>
+                          <ul className="space-y-1">
+                            {summary.securityNotes.map((note, i) => (
+                              <li key={i} className="text-muted-foreground flex items-start gap-2">
+                                <span className="text-success">✓</span>
+                                {note}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
